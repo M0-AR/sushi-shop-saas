@@ -1,0 +1,9 @@
+# Verified production path: Flutter web compiles to static files, served by nginx
+# (same pattern as Next.js export output). CI runs `flutter build web --release`
+# first (Playwright-tested artifact), then this image only packages nginx.
+# Full from-scratch alternative: see Dockerfile.web.full (needs 4GB+ pull, 30min+).
+FROM nginx:1.27-alpine AS runner
+COPY build/web /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://localhost/ || exit 1

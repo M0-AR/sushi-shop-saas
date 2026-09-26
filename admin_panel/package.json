@@ -1,0 +1,21 @@
+{
+  "name": "sushi-saas-admin",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002"
+  },
+  "dependencies": {
+    "@refinedev/core": "^5.0.12",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.5.0"
+  }
+}

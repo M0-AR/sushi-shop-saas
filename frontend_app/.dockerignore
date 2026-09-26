@@ -1,0 +1,6 @@
+.dart_tool
+.idea
+.git
+*.log
+# NOTE: build/web is REQUIRED for Dockerfile.web (nginx static path).
+# Dockerfile.web.full builds it inside Docker and ignores it here via its own context.

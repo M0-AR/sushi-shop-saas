@@ -1,0 +1,28 @@
+# Secrets — never commit (use .env.example + secrets/*.txt.example pattern)
+.env
+secrets/
+*.pem
+*.key
+
+# Node / Next
+node_modules/
+.next/
+out/
+dist/
+*.log
+
+# Flutter / Dart
+.dart_tool/
+build/
+.idea/
+*.iml
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.auth/
+
+# OS / editors
+.DS_Store
+.vscode/
+*.swp

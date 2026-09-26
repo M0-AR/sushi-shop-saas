@@ -1,0 +1,59 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Verified 2026: fast PR lane + confidence merge lane, artifacts on failure.
+jobs:
+  fast:
+    name: Fast lane (lint + unit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - run: flutter analyze
+        working-directory: frontend_app
+      - run: flutter test
+        working-directory: frontend_app
+      - uses: actions/setup-node@v4
+        with: { node-version: '24', cache: npm, cache-dependency-path: backend/package.json }
+      - run: npm ci
+        working-directory: backend
+      - run: npm run build
+        working-directory: backend
+
+  confidence:
+    name: Confidence lane (integration + E2E)
+    runs-on: ubuntu-latest
+    needs: fast
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable }
+      - run: flutter pub get && flutter build web --release
+        working-directory: frontend_app
+      - run: |
+          cp .env.example .env
+          mkdir -p secrets && echo "ci-test-password" > secrets/postgres_password.txt
+      - run: docker compose up -d --wait postgres redis backend admin_panel frontend_app
+      - run: docker compose exec -T postgres pg_isready -U sushisaas
+      - run: docker compose exec -T postgres psql -U sushisaas -d sushisaas -f - < backend/db/seed_demo.sql
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - run: npm test
+        working-directory: backend
+        env: { API_URL: http://localhost:3001 }
+      - run: npm ci
+        working-directory: tests/playwright
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=api-contract --project=admin-chromium --project=main-smoke
+        working-directory: tests/playwright
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: tests/playwright/playwright-report/
+      - run: docker compose down -v
+        if: always()
